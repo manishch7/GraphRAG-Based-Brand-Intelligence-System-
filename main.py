@@ -165,15 +165,24 @@ def log_error(function_name: str, error):
 async def authenticate() -> Client:
     """
     Authenticates to Twitter using stored cookies and returns the client.
-
+    If cookies.json doesn't exist, prompts for login, saves cookies, and then continues.
     """
     try:
         client = Client(language="en-US")
-        client.load_cookies("cookies.json")
-        print("✅ Cookies loaded, authentication assumed successful.")
+
+        if os.path.exists("cookies.json"):
+            client.load_cookies("cookies.json")
+            print("✅ Cookies loaded, authentication assumed successful.")
+        else:
+            print("⚠️ No cookies found. Logging in manually...")
+            client.login("your_username", "your_password")  # Login manually
+            client.dump_cookies("cookies.json")  # Save cookies for future use
+            print("✅ Login successful, cookies saved.")
+
         return client
+
     except Exception as e:
-        log_error("authenticate", e) # Ensuring log_error is defined.
+        log_error("authenticate", e)  # Ensure log_error is defined.
         return None
 
 async def fetch_tweets(client: Client, max_id: int = None ):
