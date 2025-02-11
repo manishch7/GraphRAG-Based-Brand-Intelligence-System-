@@ -1,7 +1,9 @@
 # utils.py
 """
-I use this module to define utility functions that help with various tasks
-like handling delays, CSV operations, data extraction from tweets, and error logging.
+This module provides utility functions for the Twitter scraper.
+It includes functions for applying delays, initializing the CSV file, 
+loading existing tweet IDs, extracting data from text (hashtags, mentions, URLs),
+processing tweet objects, and logging errors.
 """
 
 import asyncio
@@ -15,8 +17,8 @@ import logging
 
 async def apply_delay(delay_range: tuple):
     """
-    I use this function to apply a random delay within a specified range.
-    This helps me avoid hitting rate limits when making API requests.
+    Applies a random delay within the specified range.
+    This helps prevent hitting rate limits during API requests.
     """
     delay = random.randint(*delay_range)
     print(f"⏳ Waiting for {delay} seconds...")
@@ -24,8 +26,8 @@ async def apply_delay(delay_range: tuple):
 
 def initialize_csv():
     """
-    I create the CSV file with appropriate headers if it doesn't already exist.
-    This file will store all the tweet data I scrape.
+    Creates the CSV file with headers if it does not already exist.
+    The CSV file is used to store the scraped tweet data.
     """
     if not os.path.exists(CSV_FILE):
         with open(CSV_FILE, "w", newline="", encoding="utf-8") as f:
@@ -38,7 +40,7 @@ def initialize_csv():
 
 def load_existing_tweet_ids() -> set:
     """
-    I load tweet IDs from the CSV file into a set so that I can quickly check for duplicates.
+    Loads tweet IDs from the CSV file into a set for quick duplicate checking.
     """
     tweet_ids = set()
     if os.path.exists(CSV_FILE):
@@ -51,21 +53,27 @@ def load_existing_tweet_ids() -> set:
     return tweet_ids
 
 def extract_hashtags(text: str):
-    """I extract and return a list of hashtags from the provided text."""
+    """
+    Extracts and returns a list of hashtags from the provided text.
+    """
     return re.findall(r'#\w+', text)
 
 def extract_mentions(text: str):
-    """I extract and return a list of user mentions from the provided text."""
+    """
+    Extracts and returns a list of user mentions from the provided text.
+    """
     return re.findall(r'@\w+', text)
 
 def extract_urls(text: str):
-    """I extract and return a list of URLs from the provided text."""
+    """
+    Extracts and returns a list of URLs from the provided text.
+    """
     return re.findall(r'https?://\S+', text)
 
 def process_tweet(tweet) -> list:
     """
-    I process a tweet object by extracting its properties and relevant data.
-    The processed data is returned as a list which will be stored in the CSV.
+    Processes a tweet object by extracting its key properties and relevant data.
+    The processed data is returned as a list, which is used for CSV storage.
     """
     hashtags = extract_hashtags(tweet.full_text)
     mentions = extract_mentions(tweet.full_text)
@@ -89,8 +97,9 @@ def process_tweet(tweet) -> list:
 
 def handle_rate_limit(exception) -> float:
     """
-    When I hit a rate limit error, I use this function to calculate how long to wait.
-    I try to extract the reset time from the exception, and if that fails, I use a default wait time.
+    Determines the wait time when a rate limit error occurs.
+    Attempts to extract the reset time from the exception and calculates the wait time;
+    otherwise, returns a default wait time.
     """
     reset_time = extract_rate_limit_reset_time(exception)
     if reset_time:
@@ -105,7 +114,7 @@ def handle_rate_limit(exception) -> float:
 
 def extract_rate_limit_reset_time(exception) -> datetime:
     """
-    I attempt to extract the rate limit reset time from the exception headers.
+    Attempts to extract the rate limit reset time from the exception headers.
     """
     try:
         if hasattr(exception, "headers") and "x-rate-limit-reset" in exception.headers:
@@ -117,7 +126,8 @@ def extract_rate_limit_reset_time(exception) -> datetime:
 
 def log_error(function_name: str, error):
     """
-    I log errors both to the console and to a file. This helps me keep track of issues.
+    Logs errors with details to both a log file and the console.
+    This aids in tracking and debugging issues.
     """
     error_message = f"❌ Error in {function_name}: {error}"
     logging.error(error_message)
