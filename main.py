@@ -11,8 +11,8 @@ import re
 # ============================
 # Configuration & Constants
 # ============================
-BRAND = "Nike"                   # Brand to search for
-MINIMUM_TWEETS = 25              # Total tweets to fetch
+BRAND = "(to:@Nike OR to:@adidas OR to:@UnderArmour) -filter:retweets lang:en"   # Brand to search for
+MINIMUM_TWEETS = 50              # Total tweets to fetch
 CSV_FILE = "niketweets.csv"      # CSV file to store tweets
 DEFAULT_WAIT_TIME = 60           # Default wait (in seconds) for unknown rate limits
 
@@ -185,36 +185,35 @@ async def authenticate() -> Client:
         log_error("authenticate", e)  # Ensure log_error is defined.
         return None
 
-async def fetch_tweets(client: Client, max_id: int = None ):
-
-    if max_id:
-        print(f"{datetime.now(timezone.utc)} - Fetching tweets with max_id: {max_id}")
-        tweets = await client.search_tweet(QUERY, product="Latest", max_id=max_id)
-    else:
-        print(f"{datetime.now(timezone.utc)} - Fetching tweets with no max_id")
-        tweets = await client.search_tweet(QUERY, product="Latest")
-    return tweets
+async def fetch_tweets(client: Client):
+    
+    print(f"{datetime.now(timezone.utc)} - Fetching tweets")
+    tweets_result = await client.search_tweet(QUERY, product="Latest")
+    return tweets_result
 
 async def scrape_tweets(client: Client):
     """
     Scrapes tweets until at least MINIMUM_TWEETS have been collected.
-    Checks for duplicates using an in-memory set.
+    Checks for duplicates using an in-memory set and uses Twikit's cursor for pagination.
     """
-    tweet_count = 0 # Initialize the tweet counter
-    existing_ids = load_existing_tweet_ids() # Load existing tweet IDs
-    max_id = None 
+    tweet_count = 0  # Initialize tweet counter
+    existing_ids = load_existing_tweet_ids()  # Load existing tweet IDs
 
+    # Open CSV file in append mode
     with open(CSV_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
+        # Initial fetch of tweets using the cursor mechanism
+        tweets_result = await fetch_tweets(client)
 
         while tweet_count < MINIMUM_TWEETS:
             try:
-                tweets = await fetch_tweets(client, max_id )
-                if not tweets:
-                    print(f"{datetime.now(timezone.utc)} - No more tweets found. Stopping.")
+                # If no tweets are returned, exit the loop
+                if not tweets_result or len(tweets_result) == 0:
+                    print(f"{datetime.now(timezone.utc)} - No more tweets found. Stopping.") 
                     break
 
-                for tweet in tweets:
+                # Process each tweet in the current result batch
+                for tweet in tweets_result:
                     # Skip duplicate tweets
                     if str(tweet.id) in existing_ids:
                         print(f"⚠️ Skipping duplicate tweet: {tweet.id}")
@@ -233,10 +232,16 @@ async def scrape_tweets(client: Client):
                 print(f"📊 Total tweets scraped: {tweet_count}")
                 await apply_delay(LONG_DELAY_RANGE)
 
-                # Update max_id to fetch tweets older than the ones just received.
-                # We assume tweets are returned in descending order (newest first).
-                # Using the smallest tweet.id minus one ensures we don't get the same tweet again.
-                max_id = min(int(tweet.id) for tweet in tweets) - 1
+                # Check if a next cursor exists to fetch more tweets
+                if tweets_result.next_cursor:
+                    try:
+                        tweets_result = await tweets_result.next()
+                    except Exception as e:
+                        log_error("scrape_tweets (cursor fetch)", e)
+                        break
+                else:
+                    print(f"{datetime.now(timezone.utc)} - No further tweets available. Stopping.")
+                    break
 
             except TooManyRequests as e:
                 wait_time = handle_rate_limit(e)
