@@ -1,7 +1,7 @@
 # main.py
 """
-I use this module as the main entry point for my Twitter scraper.
-I authenticate to Twitter, initialize my CSV file, and then start scraping tweets.
+This is the main entry point for the Twitter scraper.
+It initializes the CSV file, authenticates to Twitter, and starts scraping tweets.
 """
 
 import asyncio
@@ -10,8 +10,7 @@ from twitter_client import authenticate, scrape_tweets
 
 async def main():
     """
-    I begin by authenticating to Twitter.
-    If authentication is successful, I initialize the CSV and then start scraping tweets.
+    Authenticates the Twitter client, initializes the CSV file, and starts scraping tweets.
     """
     client = await authenticate()
     if not client:
@@ -23,4 +22,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
