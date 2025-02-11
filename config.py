@@ -1,8 +1,8 @@
 # config.py
 """
-I use this module to define my configuration and constants.
-It includes settings for the Twitter scraper such as the search query, CSV file name,
-delay ranges, and logging setup.
+This module defines the configuration settings and constants for the Twitter scraper.
+It includes settings for the search query, tweet limits, CSV file details, delay ranges,
+and logging configuration.
 """
 
 import logging
@@ -27,8 +27,9 @@ logging.basicConfig(
 
 def get_date_range_query(brand: str) -> str:
     """
-    I use this function to construct a search query that fetches tweets from the past 5 days.
-    It excludes retweets and ensures tweets are in English.
+    Constructs a query string that fetches tweets from the past 5 days.
+    The query uses Twitter's search operators to define the date range, excludes retweets,
+    and limits tweets to English.
     """
     end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=5)
