@@ -40,7 +40,7 @@ async def fetch_tweets(client: Client):
     Utilizes Twikit's cursor mechanism for pagination.
     """
     print(f"{datetime.now(timezone.utc)} - Fetching tweets")
-    tweets_result = await client.search_tweet(QUERY, product="Latest")
+    tweets_result = await client.search_tweet(QUERY, product="Latest")  # Ensures latest tweets are fetched
     return tweets_result
 
 async def scrape_tweets(client: Client):
