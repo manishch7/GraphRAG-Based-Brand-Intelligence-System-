@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 # === Twitter Scraper Configuration ===
 BRAND = "(-ad (@nike OR @adidas OR @underarmour) -filter:retweets -filter:replies lang:en)"   # Brand search query
 
-MINIMUM_TWEETS = 50        # Total tweets to fetch
+MINIMUM_TWEETS = 50      # Total tweets to fetch
 
 CSV_FILE = "niketweets.csv"      # CSV file where tweets will be stored
 
