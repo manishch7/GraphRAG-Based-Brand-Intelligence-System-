@@ -30,12 +30,12 @@ def initialize_csv():
     The CSV file is used to store the scraped tweet data.
     """
     if not os.path.exists(CSV_FILE):
-        with open(CSV_FILE, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
+        with open(CSV_FILE, "w", newline="", encoding="utf-8") as f:    # Using 'a' to append to the file. If needed to overwrite, use 'w'.
+            writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL) # Using QUOTE_MINIMAL to handle special characters
             writer.writerow([
-                "tweet_id", "created_at", "text", "user_id", "screen_name", "verified",
-                "followers_count", "retweet_count", "like_count",
-                "hashtags", "mentions", "urls", "language"
+                "tweet_id", "created_at", "text", "user_id", "screen_name",
+                "name", "tweets_count", "followers_count", "retweet_count", "like_count",
+                "hashtags", "mentions", "urls", "location"
             ])
 
 def load_existing_tweet_ids() -> set:
@@ -75,9 +75,14 @@ def process_tweet(tweet) -> list:
     Processes a tweet object by extracting its key properties and relevant data.
     The processed data is returned as a list, which is used for CSV storage.
     """
-    hashtags = extract_hashtags(tweet.full_text)
-    mentions = extract_mentions(tweet.full_text)
-    urls = extract_urls(tweet.full_text)
+    hashtags_list = extract_hashtags(tweet.full_text)
+    mentions_list = extract_mentions(tweet.full_text)
+    urls_list = extract_urls(tweet.full_text)
+
+    # Convert lists to comma-separated strings (no brackets)
+    hashtags = ", ".join(hashtags_list)
+    mentions = ", ".join(mentions_list)
+    urls = ", ".join(urls_list)
     
     return [
         tweet.id,
@@ -85,14 +90,15 @@ def process_tweet(tweet) -> list:
         tweet.full_text,
         tweet.user.id,
         tweet.user.screen_name,
-        tweet.user.verified,
+        tweet.user.name,
+        tweet.user.statuses_count,
         tweet.user.followers_count,
         tweet.retweet_count,
         tweet.favorite_count,
         hashtags,
         mentions,
         urls,
-        tweet.lang
+        tweet.user.location
     ]
 
 def handle_rate_limit(exception) -> float:

@@ -9,9 +9,9 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 # === Twitter Scraper Configuration ===
-BRAND = "(-ad (@nike OR @adidas OR @underarmour) -filter:retweets -filter:replies lang:en)"   # Brand search query
+BRAND = "(-ad (@nike OR @nikestore OR @adidasfootball OR @nikefootball OR @adidas OR @adidasoriginals) -filter:retweets -filter:replies lang:en)"   # Brand search query
 
-MINIMUM_TWEETS = 50      # Total tweets to fetch
+MINIMUM_TWEETS = 1    # Total tweets to fetch
 
 CSV_FILE = "niketweets.csv"      # CSV file where tweets will be stored
 
