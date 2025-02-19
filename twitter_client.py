@@ -48,8 +48,13 @@ async def fetch_tweets(client: Client):
     Utilizes Twikit's cursor mechanism for pagination.
     """
     print(f"{datetime.now(timezone.utc)} - Fetching tweets")
-    tweets_result = await client.search_tweet(QUERY, product="Latest")  # Ensures latest tweets are fetched
-    return tweets_result
+    try:
+        tweets_result = await client.search_tweet(QUERY, product="Latest")  # Ensures latest tweets are fetched
+        return tweets_result
+    except Exception as e:
+        log_error("fetch_tweets", e)
+        print(f"❌ Error fetching tweets: {e}")
+        return []
 
 async def scrape_tweets(client: Client):
     """Modified version for Snowflake inserts"""
@@ -62,8 +67,11 @@ async def scrape_tweets(client: Client):
                 tweets_result = await fetch_tweets(client)
 
                 while tweet_count < MINIMUM_TWEETS:
-                    if not tweets_result:
+                    if not tweets_result or len(tweets_result) == 0:
+                        print("❌ No more tweets found. Stopping.")
                         break
+
+                    batch_size = 0
 
                     for tweet in tweets_result:
                         if str(tweet.id) in existing_ids:
@@ -81,21 +89,38 @@ async def scrape_tweets(client: Client):
                             )
                             conn.commit()
                             tweet_count += 1
+                            batch_size += 1
                             print(f"✅ Inserted Tweet ID: {tweet.id}")
                             
                         except snowflake.connector.errors.ProgrammingError as e:
                             print(f"❌ Insert failed for {tweet.id}: {e.msg}")
+
+                        if tweet_count >= MINIMUM_TWEETS:
+                            print(f"🎯 Reached MINIMUM_TWEETS ({MINIMUM_TWEETS}). Stopping extraction.")
+                            return  # Exit function
                             
                         await apply_delay(SHORT_DELAY_RANGE)
+                    print(f"📦 Batch complete. Inserted {batch_size} tweets.")
+
+                    if batch_size  >  0:
+                        print(f"⏳ Applying long delay before fetching next batch...")
+                        await apply_delay(LONG_DELAY_RANGE)
 
                     # Pagination logic
-                    await apply_delay(LONG_DELAY_RANGE)
                     if tweets_result.next_cursor:
-                        tweets_result = await tweets_result.next()
+                        try:
+                            tweets_result = await tweets_result.next()
+
+                        except Exception as e:
+                        
+                            log_error("scrape_tweets (pagination)", e)
+                            break  # Stop if pagination fails
                     else:
+                        print("❌ No further tweets available. Stopping pagination.")
                         break
 
     except Exception as e:
+        log_error("scrape_tweets", e)
         print(f"❌ Snowflake error: {str(e)}")
     finally:
         print(f"🎉 Scraping complete! Inserted {tweet_count} new tweets.")
