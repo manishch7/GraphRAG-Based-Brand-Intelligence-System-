@@ -8,11 +8,14 @@ processing tweet objects, and logging errors.
 
 import asyncio
 import random
-import csv
 import os
 import re
 from datetime import datetime, timezone
-from config import CSV_FILE, SHORT_DELAY_RANGE, LONG_DELAY_RANGE, DEFAULT_WAIT_TIME
+from config import (
+    SHORT_DELAY_RANGE, LONG_DELAY_RANGE, DEFAULT_WAIT_TIME,
+    SNOWFLAKE_DATABASE, SNOWFLAKE_SCHEMA, SNOWFLAKE_STAGE_TABLE
+)
+from snowflake_connector import get_connection
 import logging
 
 async def apply_delay(delay_range: tuple):
@@ -24,80 +27,48 @@ async def apply_delay(delay_range: tuple):
     print(f"⏳ Waiting for {delay} seconds...")
     await asyncio.sleep(delay)
 
-def initialize_csv():
-    """
-    Creates the CSV file with headers if it does not already exist.
-    The CSV file is used to store the scraped tweet data.
-    """
-    if not os.path.exists(CSV_FILE):
-        with open(CSV_FILE, "w", newline="", encoding="utf-8") as f:    # Using 'a' to append to the file. If needed to overwrite, use 'w'.
-            writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL) # Using QUOTE_MINIMAL to handle special characters
-            writer.writerow([
-                "tweet_id", "created_at", "text", "user_id", "screen_name",
-                "name", "tweets_count", "followers_count", "retweet_count", "like_count",
-                "hashtags", "mentions", "urls", "location"
-            ])
-
 def load_existing_tweet_ids() -> set:
-    """
-    Loads tweet IDs from the CSV file into a set for quick duplicate checking.
-    """
-    tweet_ids = set()
-    if os.path.exists(CSV_FILE):
-        with open(CSV_FILE, "r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            next(reader, None)  # Skip header row
-            for row in reader:
-                if row:
-                    tweet_ids.add(row[0])
-    return tweet_ids
+    """Fetch existing tweet IDs from Snowflake"""
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"""
+                    SELECT TWEET_ID 
+                    FROM {SNOWFLAKE_DATABASE}.{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_STAGE_TABLE}
+                """)
+                return {str(row[0]) for row in cur.fetchall()}
+    except Exception as e:
+        logging.error(f"Failed to load tweet IDs: {str(e)}")
+        return set()
 
-def extract_hashtags(text: str):
-    """
-    Extracts and returns a list of hashtags from the provided text.
-    """
-    return re.findall(r'#\w+', text)
+def extract_hashtags(text: str) -> str:
+    """Extract hashtags as comma-separated string"""
+    return ', '.join(re.findall(r'#\w+', text))
 
-def extract_mentions(text: str):
-    """
-    Extracts and returns a list of user mentions from the provided text.
-    """
-    return re.findall(r'@\w+', text)
+def extract_mentions(text: str) -> str:
+    """Extract mentions as comma-separated string"""
+    return ', '.join(re.findall(r'@\w+', text))
 
-def extract_urls(text: str):
-    """
-    Extracts and returns a list of URLs from the provided text.
-    """
-    return re.findall(r'https?://\S+', text)
+def extract_urls(text: str) -> str:
+    """Extract URLs as comma-separated string"""
+    return ', '.join(re.findall(r'https?://\S+', text))
 
 def process_tweet(tweet) -> list:
-    """
-    Processes a tweet object by extracting its key properties and relevant data.
-    The processed data is returned as a list, which is used for CSV storage.
-    """
-    hashtags_list = extract_hashtags(tweet.full_text)
-    mentions_list = extract_mentions(tweet.full_text)
-    urls_list = extract_urls(tweet.full_text)
-
-    # Convert lists to comma-separated strings (no brackets)
-    hashtags = ", ".join(hashtags_list)
-    mentions = ", ".join(mentions_list)
-    urls = ", ".join(urls_list)
-    
+    """Process tweet data for Snowflake insertion"""
     return [
-        tweet.id,
-        tweet.created_at,
+        str(tweet.id),
+        str(tweet.created_at),
         tweet.full_text,
-        tweet.user.id,
+        str(tweet.user.id),
         tweet.user.screen_name,
         tweet.user.name,
-        tweet.user.statuses_count,
-        tweet.user.followers_count,
-        tweet.retweet_count,
-        tweet.favorite_count,
-        hashtags,
-        mentions,
-        urls,
+        str(tweet.user.statuses_count),
+        str(tweet.user.followers_count),
+        str(tweet.retweet_count),
+        str(tweet.favorite_count),
+        extract_hashtags(tweet.full_text),
+        extract_mentions(tweet.full_text),
+        extract_urls(tweet.full_text),
         tweet.user.location
     ]
 

@@ -4,24 +4,38 @@ This module defines the configuration settings and constants for the Twitter scr
 It includes settings for the search query, tweet limits, CSV file details, delay ranges,
 and logging configuration.
 """
-
 import logging
 from datetime import datetime, timedelta, timezone
+import configparser
+
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 # === Twitter Scraper Configuration ===
 BRAND = "(-ad (@nike OR @nikestore OR @adidasfootball OR @nikefootball OR @adidas OR @adidasoriginals) -filter:retweets -filter:replies lang:en)"   # Brand search query
 
-MINIMUM_TWEETS = 1    # Total tweets to fetch
-
-CSV_FILE = "niketweets.csv"      # CSV file where tweets will be stored
+MINIMUM_TWEETS = 10    # Total tweets to fetch
 
 DEFAULT_WAIT_TIME = 60           # Default wait (in seconds) for unknown rate limits
-
-# === Delay Settings (in seconds) ===
 SHORT_DELAY_RANGE = (4, 8)       # Delay between processing individual tweets
 LONG_DELAY_RANGE = (12, 24)      # Delay between consecutive API requests
 
-# === Logging Configuration ===
+# === Snowflake Configuration ===
+SNOWFLAKE_STAGE_TABLE = "STAGING_TWEETS"  # New line
+SNOWFLAKE_USER = config.get("snowflake", "user")
+SNOWFLAKE_PASSWORD = config.get("snowflake", "password")
+SNOWFLAKE_ACCOUNT = config.get("snowflake", "account")
+SNOWFLAKE_DATABASE = config.get("snowflake", "database")
+SNOWFLAKE_SCHEMA = config.get("snowflake", "schema")
+SNOWFLAKE_WAREHOUSE = config.get("snowflake", "warehouse")
+SNOWFLAKE_ROLE = config.get("snowflake", "role")
+
+# === Twikit Authentication Configuration ===
+X_USERNAME = config.get("X", "username")
+X_EMAIL = config.get("X", "email")
+X_PASSWORD = config.get("X", "password", raw=True)
+
+# === Logging ===
 logging.basicConfig(
     filename="scraper_errors.log",
     level=logging.ERROR,
@@ -34,5 +48,5 @@ def get_date_range_query(brand: str) -> str:
 
     return f"{brand} since:{start_str}"
 
-# I build the search query dynamically using my brand constant.
+# === Twitter Search Query ===
 QUERY = get_date_range_query(BRAND)
