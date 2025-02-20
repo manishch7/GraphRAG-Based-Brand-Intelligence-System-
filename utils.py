@@ -69,34 +69,35 @@ def process_tweet(tweet) -> list:
         tweet.user.location
     ]
 
-def handle_rate_limit(exception) -> float:
-    """
-    Determines the wait time when a rate limit error occurs.
-    Attempts to extract the reset time from the exception and calculates the wait time;
-    otherwise, returns a default wait time.
-    """
-    reset_time = extract_rate_limit_reset_time(exception)
-    if reset_time:
-        wait_seconds = max(0, (reset_time - datetime.now(timezone.utc)).total_seconds())
-        print(f"🚨 Rate limit reached. Waiting for {round(wait_seconds, 2)} seconds until {reset_time}.")
-        log_error("handle_rate_limit", f"Rate limit reached. Waiting until {reset_time}.")
-        return wait_seconds
-    else:
-        print(f"🚨 Rate limit reached. Defaulting wait time to {DEFAULT_WAIT_TIME} seconds.")
-        log_error("handle_rate_limit", "Rate limit reached with unknown reset time.")
-        return DEFAULT_WAIT_TIME
-
-def extract_rate_limit_reset_time(exception) -> datetime:
-    """
-    Attempts to extract the rate limit reset time from the exception headers.
-    """
-    try:
-        if hasattr(exception, "headers") and "x-rate-limit-reset" in exception.headers:
-            reset_timestamp = int(exception.headers["x-rate-limit-reset"])
-            return datetime.fromtimestamp(reset_timestamp, tz=timezone.utc)
-    except Exception as e:
-        log_error("extract_rate_limit_reset_time", e)
-    return None
+# Option 1: Remove unused functions
+# def handle_rate_limit(exception) -> float:
+#     """
+#     Determines the wait time when a rate limit error occurs.
+#     Attempts to extract the reset time from the exception and calculates the wait time;
+#     otherwise, returns a default wait time.
+#     """
+#     reset_time = extract_rate_limit_reset_time(exception)
+#     if reset_time:
+#         wait_seconds = max(0, (reset_time - datetime.now(timezone.utc)).total_seconds())
+#         print(f"🚨 Rate limit reached. Waiting for {round(wait_seconds, 2)} seconds until {reset_time}.")
+#         log_error("handle_rate_limit", f"Rate limit reached. Waiting until {reset_time}.")
+#         return wait_seconds
+#     else:
+#         print(f"🚨 Rate limit reached. Defaulting wait time to {DEFAULT_WAIT_TIME} seconds.")
+#         log_error("handle_rate_limit", "Rate limit reached with unknown reset time.")
+#         return DEFAULT_WAIT_TIME
+#
+# def extract_rate_limit_reset_time(exception) -> datetime:
+#     """
+#     Attempts to extract the rate limit reset time from the exception headers.
+#     """
+#     try:
+#         if hasattr(exception, "headers") and "x-rate-limit-reset" in exception.headers:
+#             reset_timestamp = int(exception.headers["x-rate-limit-reset"])
+#             return datetime.fromtimestamp(reset_timestamp, tz=timezone.utc)
+#     except Exception as e:
+#         log_error("extract_rate_limit_reset_time", e)
+#     return None
 
 def log_error(function_name: str, error):
     """
