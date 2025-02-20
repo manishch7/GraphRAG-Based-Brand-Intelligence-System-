@@ -8,9 +8,8 @@ and scraping tweets using cursor-based pagination.
 import asyncio
 import os
 from datetime import datetime, timezone
-from twikit import Client, TooManyRequests, BadRequest, Unauthorized, Forbidden, NotFound
-from config import QUERY, MINIMUM_TWEETS
-from utils import log_error, apply_delay, load_existing_tweet_ids, process_tweet, handle_rate_limit
+from twikit import Client
+from utils import log_error, apply_delay, load_existing_tweet_ids, process_tweet
 from snowflake_connector import get_connection
 import snowflake.connector
 from config import *
@@ -77,9 +76,10 @@ async def scrape_tweets(client: Client):
                         if str(tweet.id) in existing_ids:
                             print(f"⚠️ Skipping duplicate: {tweet.id}")
                             continue
-                            
-                        data = process_tweet(tweet)
+                        
                         try:
+                            print(f"Processing tweet ID: {tweet.id}")
+                            data = process_tweet(tweet)
                             cur.execute(
                                 f"""
                                 INSERT INTO {SNOWFLAKE_DATABASE}.{SNOWFLAKE_SCHEMA}.STAGING_TWEETS
@@ -94,6 +94,8 @@ async def scrape_tweets(client: Client):
                             
                         except snowflake.connector.errors.ProgrammingError as e:
                             print(f"❌ Insert failed for {tweet.id}: {e.msg}")
+                        except Exception as e:
+                            print(f"❌ Error processing tweet ID {tweet.id}: {str(e)}")
 
                         if tweet_count >= MINIMUM_TWEETS:
                             print(f"🎯 Reached MINIMUM_TWEETS ({MINIMUM_TWEETS}). Stopping extraction.")
@@ -114,6 +116,8 @@ async def scrape_tweets(client: Client):
                         except Exception as e:
                         
                             log_error("scrape_tweets (pagination)", e)
+                            print(f"❌ Pagination failed. Applying default wait time of {DEFAULT_WAIT_TIME} seconds...")
+                            await asyncio.sleep(DEFAULT_WAIT_TIME)
                             break  # Stop if pagination fails
                     else:
                         print("❌ No further tweets available. Stopping pagination.")
@@ -122,5 +126,7 @@ async def scrape_tweets(client: Client):
     except Exception as e:
         log_error("scrape_tweets", e)
         print(f"❌ Snowflake error: {str(e)}")
+        print(f"⏳ Applying default wait time of {DEFAULT_WAIT_TIME} seconds before retrying...")
+        await asyncio.sleep(DEFAULT_WAIT_TIME)
     finally:
         print(f"🎉 Scraping complete! Inserted {tweet_count} new tweets.")
