@@ -16,13 +16,3 @@ def get_connection():
         schema=SNOWFLAKE_SCHEMA,
         role=SNOWFLAKE_ROLE
     )
-
-# 2. Execute Query Function
-if __name__ == "__main__":
-    # Test connection
-    try:
-        conn = get_connection()
-        print("✅ Connected!")
-        conn.close()
-    except Exception as e:
-        print("❌ Failed:", e)

@@ -11,10 +11,7 @@ import random
 import os
 import re
 from datetime import datetime, timezone
-from config import (
-    SHORT_DELAY_RANGE, LONG_DELAY_RANGE, DEFAULT_WAIT_TIME,
-    SNOWFLAKE_DATABASE, SNOWFLAKE_SCHEMA, SNOWFLAKE_STAGE_TABLE
-)
+from config import *
 from snowflake_connector import get_connection
 import logging
 

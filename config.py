@@ -14,11 +14,11 @@ config.read("config.ini")
 # === Twitter Scraper Configuration ===
 BRAND = "(-ad (@nike OR @nikestore OR @adidasfootball OR @nikefootball OR @adidas OR @adidasoriginals) -filter:retweets -filter:replies lang:en)"   # Brand search query
 
-MINIMUM_TWEETS = 10    # Total tweets to fetch
+MINIMUM_TWEETS = 50    # Total tweets to fetch
 
 DEFAULT_WAIT_TIME = 60           # Default wait (in seconds) for unknown rate limits
-SHORT_DELAY_RANGE = (4, 8)       # Delay between processing individual tweets
-LONG_DELAY_RANGE = (12, 24)      # Delay between consecutive API requests
+SHORT_DELAY_RANGE = (6, 10)       # Delay between processing individual tweets
+LONG_DELAY_RANGE = (20, 40)      # Delay between consecutive API requests
 
 # === Snowflake Configuration ===
 SNOWFLAKE_STAGE_TABLE = "STAGING_TWEETS"  # New line
