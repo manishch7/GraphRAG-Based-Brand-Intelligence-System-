@@ -78,7 +78,6 @@ async def scrape_tweets(client: Client):
                             continue
                         
                         try:
-                            print(f"Processing tweet ID: {tweet.id}")
                             data = process_tweet(tweet)
                             cur.execute(
                                 f"""
