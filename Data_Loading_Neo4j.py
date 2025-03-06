@@ -19,6 +19,20 @@ def load_tweets_data_into_neo4j():
         snowflake_cursor.execute("SELECT * FROM Final_Tweets")
         tweet_rows = snowflake_cursor.fetchall()
         print(f"Fetched {len(tweet_rows)} rows from the Final_Tweets table in Snowflake.")
+
+        # -- Early Duplicate Check: Fetch existing tweet IDs from Neo4j --
+        with neo4j_driver.session(database=NEO4J_DATABASE) as neo4j_session:
+            result = neo4j_session.run("MATCH (t:Tweet) RETURN t.tweet_id AS tweet_id")
+            existing_tweet_ids = {record["tweet_id"] for record in result}
+        
+        original_count = len(tweet_rows)
+        tweet_rows = [row for row in tweet_rows if row["TWEET_ID"] not in existing_tweet_ids]
+        filtered_count = len(tweet_rows)
+        print(f"Filtered out {original_count - filtered_count} duplicate tweet(s) already in Neo4j.")
+        
+        if not tweet_rows:
+            print("No new tweets to load into Neo4j. Exiting.")
+            return
         
         def merge_tweet_data(tx, tweet_row):
             # Convert comma-separated string fields into lists, if not 'NO' values

@@ -19,6 +19,23 @@ cursor = conn.cursor()
 cursor.execute(query)
 df = pd.DataFrame(cursor.fetchall(), columns=[col[0] for col in cursor.description])
 
+# -- Early duplicate check: Filter out tweets already in FINAL_TWEETS --
+check_query = "SELECT TWEET_ID FROM FINAL_TWEETS"
+cursor_existing = conn.cursor()
+cursor_existing.execute(check_query)
+existing_ids = set(row[0] for row in cursor_existing.fetchall())
+cursor_existing.close()
+
+initial_count = len(df)
+df = df[~df["TWEET_ID"].isin(existing_ids)]
+filtered_count = len(df)
+print(f"Filtered out {initial_count - filtered_count} duplicate tweet(s).")
+
+if df.empty:
+    print("No new tweets to process. Exiting.")
+    conn.close()
+    exit()
+
 # **4️⃣ Clean Text (Remove URLs)**
 def remove_urls(text):
     if isinstance(text, str):
