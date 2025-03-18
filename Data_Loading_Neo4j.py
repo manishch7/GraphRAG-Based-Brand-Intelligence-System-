@@ -144,5 +144,3 @@ def load_tweets_data_into_neo4j():
         except Exception as close_ex:
             print("Error closing connections:", close_ex)
 
-if __name__ == "__main__":
-    load_tweets_data_into_neo4j()
