@@ -174,4 +174,6 @@ async def scrape_tweets(client: Client):
         print(f"⏳ Applying default wait time of {DEFAULT_WAIT_TIME} seconds before retrying...")
         await asyncio.sleep(DEFAULT_WAIT_TIME)
     finally:
-        print("✅❤️‍🔥🥶 All operations completed successfully.")
+        print("✅🛺🛺🛺🥶 All operations completed successfully.🛺🛺🛺")
+        await asyncio.sleep(20)  # Proper async delay
+        print("----🕒 20-second delay over. Proceeding with final processing...")
