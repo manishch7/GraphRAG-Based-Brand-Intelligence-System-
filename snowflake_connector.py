@@ -1,6 +1,6 @@
 # snowflake_connector.py
 import snowflake.connector
-from config import *  # All your credentials
+from config import SNOWFLAKE_ACCOUNT, SNOWFLAKE_DATABASE, SNOWFLAKE_PASSWORD, SNOWFLAKE_ROLE, SNOWFLAKE_SCHEMA, SNOWFLAKE_STAGE_TABLE, SNOWFLAKE_USER, SNOWFLAKE_WAREHOUSE  # All your credentials
 
 # 1. Basic Connection Function
 def get_connection():
