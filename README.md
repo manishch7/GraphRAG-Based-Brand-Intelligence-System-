@@ -1,4 +1,4 @@
-# 🐦 Twitter Scraper - Async Twitter Data Extraction with Twikit
+# 🐦 Graph Rag Based Brand Intelligence System
 
 ## Asynchronous Twitter Scraper
 
