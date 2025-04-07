@@ -38,7 +38,7 @@ async def authenticate() -> Client:
             print("🔄 No cookies found; performing manual login...")
             await client.login(
                 auth_info_1=X_USERNAME,
-                auth_info_2=X_EMAIL,
+                #auth_info_2=X_EMAIL,
                 password=X_PASSWORD,
                 cookies_file=cookies_path
             )
