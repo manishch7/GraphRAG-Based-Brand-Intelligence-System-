@@ -17,7 +17,7 @@ QUERY = "(@apple OR @microsoft OR @google OR #Apple OR #Microsoft OR #Google) -f
 #QUERY = "(-ad (@nike OR @nikestore OR @adidasfootball OR @nikefootball OR @adidas OR @adidasoriginals OR @puma OR @pumafootball OR @pumasportstyle OR #Nike OR #Adidas OR #Puma OR #NikeOriginals OR #AdidasOriginals OR #PumaSport OR #PumaFootball) -filter:retweets -filter:replies lang:en)"
    # Brand search query
 
-MINIMUM_TWEETS = 25 # Total tweets to fetch
+MINIMUM_TWEETS = 5 # Total tweets to fetch
 
 DEFAULT_WAIT_TIME = 60           # Default wait (in seconds) for unknown rate limits
 SHORT_DELAY_RANGE = (5, 15)       # Delay between processing individual tweets
