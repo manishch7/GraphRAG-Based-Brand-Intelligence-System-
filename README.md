@@ -1,6 +1,6 @@
 # 🐦 Graph Rag Based Brand Intelligence System
 
-## Asynchronous Twitter Scraperr
+## Asynchronous Twitter Scraper
 
 This project is an **asynchronous Twitter scraper** that fetches tweets based on a specified brand or keyword. 
 
