@@ -12,10 +12,12 @@ config = configparser.ConfigParser()
 config.read("config.ini")
 
 # === Twitter Scraper Configuration ===
-QUERY = "(-ad (@nike OR @nikestore OR @adidasfootball OR @nikefootball OR @adidas OR @adidasoriginals OR @puma OR @pumafootball OR @pumasportstyle OR #Nike OR #Adidas OR #Puma OR #NikeOriginals OR #AdidasOriginals OR #PumaSport OR #PumaFootball) -filter:retweets -filter:replies lang:en)"
+QUERY = "(@apple OR @microsoft OR @google OR #Apple OR #Microsoft OR #Google) -filter:retweets -filter:replies lang:en"
+
+#QUERY = "(-ad (@nike OR @nikestore OR @adidasfootball OR @nikefootball OR @adidas OR @adidasoriginals OR @puma OR @pumafootball OR @pumasportstyle OR #Nike OR #Adidas OR #Puma OR #NikeOriginals OR #AdidasOriginals OR #PumaSport OR #PumaFootball) -filter:retweets -filter:replies lang:en)"
    # Brand search query
 
-MINIMUM_TWEETS = 140 # Total tweets to fetch
+MINIMUM_TWEETS = 25 # Total tweets to fetch
 
 DEFAULT_WAIT_TIME = 60           # Default wait (in seconds) for unknown rate limits
 SHORT_DELAY_RANGE = (5, 15)       # Delay between processing individual tweets
@@ -33,7 +35,7 @@ SNOWFLAKE_ROLE = config.get("snowflake", "role")
 
 # === Twikit Authentication Configuration ===
 X_USERNAME = config.get("X", "username")
-X_EMAIL = config.get("X", "email")
+#X_EMAIL = config.get("X", "email")
 X_PASSWORD = config.get("X", "password", raw=True)
 
 # === Neo4j Configuration ===
