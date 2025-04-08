@@ -3,3 +3,6 @@
 /scraper_errors.log
 /__pycache__/
 /Testing_Connection_Neo4j.py
+/embedding_migration.log
+/backfill_snowflake_embeddings.py
+/add_tweet_embeddings.py
