@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import traceback
 import snowflake.connector
+import json
 from neo4j.exceptions import ServiceUnavailable, Neo4jError
 
 # Import connection functions from your connector files
@@ -16,7 +17,11 @@ def load_tweets_data_into_neo4j():
         
         # Query data from the Final_Tweets table in Snowflake
         snowflake_cursor = snowflake_connection.cursor(snowflake.connector.DictCursor)
-        snowflake_cursor.execute("SELECT * FROM Final_Tweets")
+        snowflake_cursor.execute(""" SELECT 
+        TWEET_ID, CREATED_AT, DAY, DATE, TIME, TEXT, USER_ID, SCREEN_NAME, NAME,
+        TWEETS_COUNT, FOLLOWERS_COUNT, RETWEET_COUNT, LIKE_COUNT, HASHTAGS, MENTIONS, URLS,
+        LOCATION, SENTIMENT, TOPIC, EMBEDDING FROM FINAL_TWEETS
+        """ )
         tweet_rows = snowflake_cursor.fetchall()
         print(f"Fetched {len(tweet_rows)} rows from the Final_Tweets table in Snowflake.")
 
@@ -47,6 +52,22 @@ def load_tweets_data_into_neo4j():
             mention_list = []
             if tweet_row['MENTIONS'] and tweet_row['MENTIONS'].upper() != 'NOMENTIONS':
                 mention_list = [mention.strip() for mention in tweet_row['MENTIONS'].split(',') if mention.strip()]
+
+             # Extract embedding  - handle cases where it might be NULL or in different formats
+            embedding = None
+            if 'EMBEDDING' in tweet_row and tweet_row['EMBEDDING'] is not None:
+                try:
+                    # If it's already a list, use it directly
+                    if isinstance(tweet_row['EMBEDDING'], list):
+                        embedding = tweet_row['EMBEDDING']
+                    # If it's a string representation of a list, parse it
+                    elif isinstance(tweet_row['EMBEDDING'], str):
+                        embedding = json.loads(tweet_row['EMBEDDING'])
+                    # If it's a VARIANT type from Snowflake, it might be already parsed
+                    else:
+                        embedding = tweet_row['EMBEDDING']
+                except Exception as e:
+                    print(f"Error processing embedding for tweet {tweet_row['TWEET_ID']}: {str(e)}")
             
             cypher_query = """
             // Merge User node (uniquely identified by user_id)
@@ -72,6 +93,7 @@ def load_tweets_data_into_neo4j():
             WITH tweet, $hashtag_list AS hashtags, $url_list AS urls, $tweet_location AS location, 
                  $tweet_sentiment AS sentiment, $tweet_topic AS topic, $mention_list AS mentions
             
+                 
             // Process Hashtags
             FOREACH (hashtag IN hashtags |
                 MERGE (h:Hashtag {tag: hashtag})
@@ -123,6 +145,18 @@ def load_tweets_data_into_neo4j():
                    tweet_sentiment=tweet_row['SENTIMENT'],
                    tweet_topic=tweet_row['TOPIC'],
                    mention_list=mention_list)
+            
+            # Add embedding separately (if available) using the Neo4j vector function
+            if embedding is not None:
+                try:
+                    # Use db.create.setNodeVectorProperty to set the embedding
+                    tx.run("""
+                    MATCH (t:Tweet {tweet_id: $tweet_id})
+                    CALL db.create.setNodeVectorProperty(t, 'embedding', $EMBEDDING) 
+                    """, tweet_id=tweet_row['TWEET_ID'], EMBEDDING=embedding)
+                    print(f"Added embedding to tweet {tweet_row['TWEET_ID']}")
+                except Exception as e:
+                    print(f"Error setting embedding for tweet {tweet_row['TWEET_ID']}: {str(e)}")
         
         # Write each tweet row into Neo4j using a session
         with neo4j_driver.session(database=NEO4J_DATABASE) as neo4j_session:
