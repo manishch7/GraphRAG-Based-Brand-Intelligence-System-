@@ -21,13 +21,15 @@ def load_tweets_data_into_neo4j():
         TWEET_ID, CREATED_AT, DAY, DATE, TIME, TEXT, USER_ID, SCREEN_NAME, NAME,
         TWEETS_COUNT, FOLLOWERS_COUNT, RETWEET_COUNT, LIKE_COUNT, HASHTAGS, MENTIONS, URLS,
         LOCATION, SENTIMENT, TOPIC, EMBEDDING FROM FINAL_TWEETS
+        WHERE CREATED_AT >= DATEADD(day, -3, CURRENT_TIMESTAMP())
         """ )
         tweet_rows = snowflake_cursor.fetchall()
         print(f"Fetched {len(tweet_rows)} rows from the Final_Tweets table in Snowflake.")
 
         # -- Early Duplicate Check: Fetch existing tweet IDs from Neo4j --
         with neo4j_driver.session(database=NEO4J_DATABASE) as neo4j_session:
-            result = neo4j_session.run("MATCH (t:Tweet) RETURN t.tweet_id AS tweet_id")
+            result = neo4j_session.run("""  MATCH (t:Tweet) WHERE datetime(replace(t.created_at, ' ', 'T')) >= datetime() - duration('P3D')
+                                            RETURN t.tweet_id AS tweet_id """)
             existing_tweet_ids = {record["tweet_id"] for record in result}
         
         original_count = len(tweet_rows)
