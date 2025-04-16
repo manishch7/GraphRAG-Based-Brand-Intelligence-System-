@@ -1,0 +1,29 @@
+# Twitter Scraping & Analysis Requirements
+
+# Twikit client for Twitter API interaction
+twikit
+
+# Database connections
+snowflake-connector-python
+neo4j
+
+# Data processing
+pandas
+numpy
+tqdm
+
+# Date and time handling
+python-dateutil
+pytz
+zoneinfo; python_version < '3.9'
+
+# Machine Learning and NLP
+torch
+transformers
+openai
+
+# Configuration and utilities
+configparser
+asyncio
+
+# Vector database functionality requires Neo4j >= 5.11 with vector capabilities
