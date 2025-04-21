@@ -6,3 +6,4 @@
 /embedding_migration.log
 /backfill_snowflake_embeddings.py
 /add_tweet_embeddings.py
+/exports

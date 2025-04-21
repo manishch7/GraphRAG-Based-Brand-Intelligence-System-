@@ -14,7 +14,7 @@ config.read("config.ini")
 # === Twitter Scraper Configuration ===
 #QUERY = "(@apple OR @microsoft OR @google OR #Apple OR #Microsoft OR #Google) -filter:retweets -filter:replies lang:en"
 
-QUERY = "(-ad (@nike OR @nikestore OR @adidasfootball OR @nikefootball OR @adidas OR @adidasoriginals OR @puma OR @pumafootball OR @pumasportstyle OR #Nike OR #Adidas OR #Puma OR #NikeOriginals OR #AdidasOriginals OR #PumaSport OR #PumaFootball) -filter:retweets -filter:replies lang:en)"
+QUERY = "(-ad (@nike OR @nikestore OR @adidasfootball OR @nikefootball OR @adidas OR @adidasoriginals OR @puma OR @pumafootball OR @pumasportstyle ) -filter:retweets -filter:replies lang:en)"
    # Brand search query
 
 MINIMUM_TWEETS = 1 # Total tweets to fetch
