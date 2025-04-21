@@ -34,7 +34,6 @@ def load_existing_tweet_ids() -> set:
                 cur.execute(f"""
                     SELECT TWEET_ID 
                     FROM {SNOWFLAKE_DATABASE}.{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_STAGE_TABLE}
-                    WHERE CREATED_AT >= DATEADD(day, -3, CURRENT_TIMESTAMP());
                 """)
                 return {str(row[0]) for row in cur.fetchall()}
     except Exception as e:
