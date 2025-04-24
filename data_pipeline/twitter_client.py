@@ -10,8 +10,8 @@ import os
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from twikit import Client
-from utils import log_error, apply_delay, load_existing_tweet_ids, process_tweet
-from snowflake_connector import get_connection
+from data_pipeline.utils import log_error, apply_delay, load_existing_tweet_ids, process_tweet
+from connectors.snowflake_connector import get_connection
 import snowflake.connector
 from config import *
 

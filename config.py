@@ -7,7 +7,9 @@ and logging configuration.
 import logging
 from datetime import datetime, timedelta, timezone
 import configparser
+import os
 
+config_path = os.path.join("config", "config.ini")
 config = configparser.ConfigParser()
 config.read("config.ini")
 

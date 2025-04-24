@@ -12,7 +12,7 @@ import os
 import re
 from datetime import datetime, timezone
 from config import *
-from snowflake_connector import get_connection
+from connectors.snowflake_connector import get_connection
 import logging
 import pytz
 from dateutil import parser

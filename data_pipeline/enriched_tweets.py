@@ -8,7 +8,7 @@ from tqdm import tqdm
 from snowflake.connector import connect
 from snowflake.connector.cursor import DictCursor
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
-from snowflake_connector import get_connection
+from connectors.snowflake_connector import get_connection
 
 # Read config file - add this where you inialize other components
 config = configparser.ConfigParser()

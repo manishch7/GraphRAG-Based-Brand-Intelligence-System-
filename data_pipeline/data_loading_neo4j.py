@@ -5,8 +5,8 @@ import json
 from neo4j.exceptions import ServiceUnavailable, Neo4jError
 
 # Import connection functions from your connector files
-from snowflake_connector import get_connection as get_snowflake_connection
-from neo4j_connector import get_driver as get_neo4j_driver
+from connectors.snowflake_connector import get_connection as get_snowflake_connection
+from connectors.neo4j_connector import get_driver as get_neo4j_driver
 from config import NEO4J_DATABASE
 
 def load_tweets_data_into_neo4j():

@@ -1,8 +1,8 @@
 import asyncio
-from twitter_client import authenticate, scrape_tweets
-from utils import log_error  # Added for error handling
-from Enriched_Tweets import process_tweets
-from Data_Loading_Neo4j import load_tweets_data_into_neo4j
+from data_pipeline.twitter_client import authenticate, scrape_tweets
+from data_pipeline.utils import log_error  # Added for error handling
+from data_pipeline.enriched_tweets import process_tweets
+from data_pipeline.data_loading_neo4j import load_tweets_data_into_neo4j
 
 async def main():
     """Main entry point"""

@@ -7,3 +7,6 @@
 /backfill_snowflake_embeddings.py
 /add_tweet_embeddings.py
 /exports
+/.venv
+/__init__.py
+visualization/llm_qa.py
