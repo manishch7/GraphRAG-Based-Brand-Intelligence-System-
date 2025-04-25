@@ -10,3 +10,4 @@
 /.venv
 /__init__.py
 visualization/llm_qa.py
+/connectors/__pycache__
